@@ -25,6 +25,7 @@ from emg2qwerty.modules import (
     MultiBandRotationInvariantMLP,
     SpectrogramNorm,
     TDSConvEncoder,
+    GRUEncoder
 )
 from emg2qwerty.transforms import Transform
 
@@ -150,11 +151,50 @@ class TDSConvCTCModule(pl.LightningModule):
         optimizer: DictConfig,
         lr_scheduler: DictConfig,
         decoder: DictConfig,
+        gru_hidden_size: int | None = None,
+        gru_num_layers: int = 1,
+        gru_bidirectional: bool = False,
+        gru_dropout: float = 0.0,
+        encoder_type: str = "tds",
     ) -> None:
         super().__init__()
         self.save_hyperparameters()
 
         num_features = self.NUM_BANDS * mlp_features[-1]
+
+        encoder = None
+        if encoder_type == "gru":
+          encoder = GRUEncoder(
+              input_size=num_features,
+              hidden_size=gru_hidden_size,
+              num_layers=gru_num_layers,
+              bidirectional=gru_bidirectional,
+              dropout=gru_dropout,
+          )
+        elif encoder_type == "tds_gru":
+          encoder = nn.Sequential(
+            TDSConvEncoder(
+              num_features=num_features,
+              block_channels=block_channels,
+              kernel_width=kernel_width,
+            ),
+            GRUEncoder(
+              input_size=num_features,
+              hidden_size=gru_hidden_size,
+              num_layers=gru_num_layers,
+              bidirectional=gru_bidirectional,
+              dropout=gru_dropout
+            )
+          )
+        else: # default encoder is baseline tdsconv
+          encoder = TDSConvEncoder(
+                num_features=num_features,
+                block_channels=block_channels,
+                kernel_width=kernel_width,
+          )
+
+        print("encoder_type =", encoder_type)
+        print("encoder =", encoder)
 
         # Model
         # inputs: (T, N, bands=2, electrode_channels=16, freq)
@@ -169,11 +209,7 @@ class TDSConvCTCModule(pl.LightningModule):
             ),
             # (T, N, num_features)
             nn.Flatten(start_dim=2),
-            TDSConvEncoder(
-                num_features=num_features,
-                block_channels=block_channels,
-                kernel_width=kernel_width,
-            ),
+            encoder, # chosen from encoder_type
             # (T, N, num_classes)
             nn.Linear(num_features, charset().num_classes),
             nn.LogSoftmax(dim=-1),
