@@ -1,5 +1,32 @@
 # C147/247 Final Project
+
 ### Winter 2026 
+
+by Gautam Anand, Joyce Chen, Helen Feng, Matthew Li
+
+In order to explore the effects of different architectures on the original emg2qwerty work from Meta, our team applied a variety of techniques to the baseline model. To investigate the effects of different changes, we evaluated the performance of the following architectural augments/changes to the baseline model:
+- RNN (Recurrent Neural Network)
+- LSTM (Long Short-Term Memory)
+- GRU (Gated Recurrent Unit)
+- Transformer
+
+We also experimented with different factors that influence the architecture's performance, such as:
+- Data preprocessing/augmentation
+- Number of channels in data
+- Amount of training data available
+- Sampling rate in data
+
+The code that we used to explore these effects can be found in this repo. Below are the files we edited/added to evaluate model performance with these changes.
+
+**GRU**
+- [emg2qwerty/lightning.py](emg2qwerty/lightning.py) - added support to take in GRU parameters and encoder_type in model config
+- [emg2qwerty/modules.py](emg2qwerty/modules.py)
+- [config/model/tds_gru_ctc.yaml](config/model/tds_gru_ctc.yaml) - the config used to instantiate the model with a GRU layer after the TDSConvEncoder layer, with the newly added GRU parameters
+- [config/model/gru.yaml](config/model/gru.yaml) - a config used to experiment with the effects of outright replacing the original encoder (this was not included in the final paper)
+
+**The rest of this README is from the original project README, which refers to the original repo.**
+
+#
 
 This course project is built upon the emg2qwerty work from Meta. The first section of this README provides some guidance for working with the repo and contains a running list of FAQs. **Note that the rest of the README is from the original repo and we encourage you to take a look at their work.**
 
