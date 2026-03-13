@@ -20,7 +20,7 @@ The code that we used to explore these effects can be found in this repo. Below 
 
 **GRU**
 - [emg2qwerty/lightning.py](emg2qwerty/lightning.py) - added support to take in GRU parameters and encoder_type in model config
-- [emg2qwerty/modules.py](emg2qwerty/modules.py)
+- [emg2qwerty/modules.py](emg2qwerty/modules.py) - added a GRUEncoder class used in lightning.py
 - [config/model/tds_gru_ctc.yaml](config/model/tds_gru_ctc.yaml) - the config used to instantiate the model with a GRU layer after the TDSConvEncoder layer, with the newly added GRU parameters
 - [config/model/gru.yaml](config/model/gru.yaml) - a config used to experiment with the effects of outright replacing the original encoder (this was not included in the final paper)
 
