@@ -3,6 +3,11 @@ to_tensor:
   _target_: emg2qwerty.transforms.ToTensor
   fields: [emg_left, emg_right]
 
+resample:
+  _target_: emg2qwerty.transforms.Resample
+  orig_freq: 2000
+  new_freq: 2000
+
 band_rotation:
   _target_: emg2qwerty.transforms.ForEach  # i.i.d rotation offset for each band
   transform:
@@ -28,6 +33,7 @@ specaug:
 transforms:
   train:
     - ${to_tensor}
+    - ${resample}
     - ${band_rotation}
     - ${temporal_jitter}
     - ${logspec}
@@ -35,6 +41,7 @@ transforms:
 
   val:
     - ${to_tensor}
+    - ${resample}
     - ${logspec}
 
   test: ${transforms.val}

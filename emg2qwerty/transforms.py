@@ -11,6 +11,7 @@ from typing import Any, TypeVar
 import numpy as np
 import torch
 import torchaudio
+from torchaudio import functional as F
 
 
 TTransformIn = TypeVar("TTransformIn")
@@ -152,6 +153,33 @@ class TemporalAlignmentJitter:
             right = right[-offset:]
 
         return torch.stack([left, right], dim=self.stack_dim)
+
+
+@dataclass
+class Resample:
+    """Resample EMG along the time dimension.
+
+    Expects input of shape (T, ...). Resampling is applied on the time axis
+    while treating all other dimensions as batch-like.
+
+    Args:
+        orig_freq (int): Original sampling rate in Hz.
+        new_freq (int): Target sampling rate in Hz.
+    """
+
+    orig_freq: int
+    new_freq: int
+
+    def __post_init__(self) -> None:
+        assert self.orig_freq > 0
+        assert self.new_freq > 0
+
+    def __call__(self, tensor: torch.Tensor) -> torch.Tensor:
+        if self.orig_freq == self.new_freq:
+            return tensor
+        x = tensor.movedim(0, -1)  # (..., T)
+        y = F.resample(x, orig_freq=self.orig_freq, new_freq=self.new_freq)
+        return y.movedim(-1, 0)  # (T, ...)
 
 
 @dataclass
