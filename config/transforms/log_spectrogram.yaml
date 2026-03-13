@@ -3,6 +3,17 @@ to_tensor:
   _target_: emg2qwerty.transforms.ToTensor
   fields: [emg_left, emg_right]
 
+normalize:
+  _target_: emg2qwerty.transforms.NormalizeEMG
+
+gaussian_noise:
+  _target_: emg2qwerty.transforms.GaussianNoise
+  std: 0.01  # adjust noise level as desired
+
+channel_dropout:
+  _target_: emg2qwerty.transforms.RandomChannelDropout
+  drop_prob: 0.15
+
 band_rotation:
   _target_: emg2qwerty.transforms.ForEach  # i.i.d rotation offset for each band
   transform:
@@ -21,13 +32,16 @@ logspec:
 specaug:
   _target_: emg2qwerty.transforms.SpecAugment
   n_time_masks: 3
-  time_mask_param: 25  # Max 200ms per time mask for 125Hz spectrogram
+  time_mask_param: 25
   n_freq_masks: 2
   freq_mask_param: 4
 
 transforms:
   train:
     - ${to_tensor}
+    # - ${normalize}
+    # - ${gaussian_noise}
+    - ${channel_dropout}   # <-- new augmentation
     - ${band_rotation}
     - ${temporal_jitter}
     - ${logspec}
