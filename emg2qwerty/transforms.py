@@ -243,3 +243,58 @@ class SpecAugment:
 
         # (..., C, freq, T) -> (T, ..., C, freq)
         return x.movedim(-1, 0)
+@dataclass
+class GaussianNoise:
+    """Adds Gaussian noise to EMG signals per channel.
+
+    Args:
+        std (float): Standard deviation of the noise to add.
+        batch_dim (int): Which dimension corresponds to the batch (default: 1).
+    """
+
+    std: float = 0.01
+    batch_dim: int = 1
+
+    def __call__(self, tensor: torch.Tensor) -> torch.Tensor:
+        noise = torch.randn_like(tensor) * self.std
+        return tensor + noise
+  
+@dataclass
+class RandomChannelDropout:
+    """Randomly drops electrode channels by zeroing them out.
+
+    Simulates missing or noisy EMG electrodes.
+
+    Args:
+        drop_prob (float): Probability of dropping each channel.
+        channel_dim (int): Dimension corresponding to electrode channels.
+    """
+
+    drop_prob: float = 0.1
+    channel_dim: int = -1
+
+    def __call__(self, tensor: torch.Tensor) -> torch.Tensor:
+        # tensor shape typically (T, bands, C)
+        num_channels = tensor.shape[self.channel_dim]
+
+        mask = torch.rand(num_channels, device=tensor.device) > self.drop_prob
+        mask = mask.float()
+
+        # reshape mask to broadcast
+        shape = [1] * tensor.ndim
+        shape[self.channel_dim] = num_channels
+        mask = mask.view(*shape)
+
+        return tensor * mask
+
+        
+@dataclass
+class NormalizeEMG:
+    """Normalizes EMG data per channel."""
+    
+    def __call__(self, tensor: torch.Tensor) -> torch.Tensor:
+        # tensor shape: (T, 2, C)
+        # normalize each channel independently across time
+        mean = tensor.mean(dim=0, keepdim=True)
+        std = tensor.std(dim=0, keepdim=True) + 1e-6
+        return (tensor - mean) / std
