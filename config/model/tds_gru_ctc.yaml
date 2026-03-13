@@ -12,9 +12,9 @@ module:
   encoder_type: tds_gru
 
   gru_hidden_size: 384
-  gru_num_layers: 1
+  gru_num_layers: 2
   gru_bidirectional: true
-  gru_dropout: 0.3
+  gru_dropout: 0.1
 
 datamodule:
   _target_: emg2qwerty.lightning.WindowedEMGDataModule
