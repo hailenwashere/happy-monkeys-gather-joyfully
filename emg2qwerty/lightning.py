@@ -176,12 +176,21 @@ class TDSConvCTCModule(pl.LightningModule):
                 block_channels=block_channels,
                 kernel_width=kernel_width,
             ),
-            TDSLSTMEncoder(
+            TransformerStackEncoder(
                 num_features=num_features,
-                num_lstm_layers=2,
-                lstm_hidden_size=num_features,  # simplest choice
+                num_layers=2,
+                nhead=8,
+                dim_feedforward=1536,
                 dropout=0.1,
+                max_len=4096,
+                norm_first=True,
             ),
+            # TDSLSTMEncoder(
+            #     num_features=num_features,
+            #     num_lstm_layers=2,
+            #     lstm_hidden_size=num_features,  
+            #     dropout=0.1,
+            # ),
             # (T, N, num_classes)
             nn.Linear(num_features, charset().num_classes),
             nn.LogSoftmax(dim=-1),
