@@ -1,4 +1,6 @@
 # C147/247 Final Project
+Please refer to the branches in the repo for the code we used to experiment with!
+
 ### Winter 2026 
 
 This course project is built upon the emg2qwerty work from Meta. The first section of this README provides some guidance for working with the repo and contains a running list of FAQs. **Note that the rest of the README is from the original repo and we encourage you to take a look at their work.**
